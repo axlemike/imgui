@@ -5346,7 +5346,7 @@ ImFontBaked* ImFontAtlasBakedGetOrAdd(ImFontAtlas* atlas, ImFont* font, float fo
 }
 
 // Trim trailing space and find beginning of next line
-static inline const char* CalcWordWrapNextLineStartA(const char* text, const char* text_end)
+const char* ImTextCalcWordWrapNextLineStart(const char* text, const char* text_end)
 {
     while (text < text_end && ImCharIsBlankA(*text))
         text++;
@@ -5398,12 +5398,7 @@ const char* ImFont::CalcWordWrapPosition(float size, const char* text, const cha
         if (c < 32)
         {
             if (c == '\n')
-            {
-                line_width = word_width = blank_width = 0.0f;
-                inside_word = true;
-                s = next_s;
-                continue;
-            }
+                return s; // Direct return, skip "Wrap_width is too small to fit anything" path.
             if (c == '\r')
             {
                 s = next_s;
@@ -5495,7 +5490,7 @@ ImVec2 ImFont::CalcTextSizeA(float size, float max_width, float wrap_width, cons
                 text_size.y += line_height;
                 line_width = 0.0f;
                 word_wrap_eol = NULL;
-                s = CalcWordWrapNextLineStartA(s, text_end); // Wrapping skips upcoming blanks
+                s = ImTextCalcWordWrapNextLineStart(s, text_end); // Wrapping skips upcoming blanks
                 continue;
             }
         }
@@ -5619,7 +5614,7 @@ begin:
                 // If the specs for CalcWordWrapPosition() were reworked to optionally return on \n we could combine both.
                 // However it is still better than nothing performing the fast-forward!
                 s = CalcWordWrapPosition(size, s, line_end ? line_end : text_end, wrap_width);
-                s = CalcWordWrapNextLineStartA(s, text_end);
+                s = ImTextCalcWordWrapNextLineStart(s, text_end);
             }
             else
             {
@@ -5673,7 +5668,7 @@ begin:
                 if (y > clip_rect.w)
                     break; // break out of main loop
                 word_wrap_eol = NULL;
-                s = CalcWordWrapNextLineStartA(s, text_end); // Wrapping skips upcoming blanks
+                s = ImTextCalcWordWrapNextLineStart(s, text_end); // Wrapping skips upcoming blanks
                 continue;
             }
         }
